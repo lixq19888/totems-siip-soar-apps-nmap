@@ -1,0 +1,291 @@
+languageType: PYTHON3
+playBookVersion: 1.0.0
+appId: fb1ee5381f3211ecbc21000c29bca94c
+appVersion: 1.0.0
+appName: Nmap
+appAlias: Nmap
+description: 扫描应用
+brief: Nmap是用来探测计算机网络上的主机和服务的一种安全扫描器，Nmap通过发送特制的数据包到目标主机，然后对返回数据包进行分析，可用于主机探测、端口扫描、版本检测以及系统检测
+tags:
+  - Nmap
+  - HTTP
+categories:
+  name: 工具
+contactInfo:
+  name: "ABT 安博通"
+  url: http://www.abtnetworks.com/welcome.html
+  email: "XXX@sapling.com.cn"
+  phone: XXXXX
+  description: XXXXXXXXXXXX
+licenseInfo:
+  name: 授权信息
+  url: https://XXXXX/LICENSE.md
+instanceEnabled: true
+setting:
+  parameters:
+    - name: url
+      defaultValue: "http://192.168.215.170:8068/"
+      value: ""
+      description: request url
+      example: "http://192.168.215.170:8068/"
+      required: false
+      schema:
+        type: STRING
+      ui:
+        type: text
+        uiName: "服务器网址"
+returnSetting:
+  commonFields:
+    - name: ipAddress
+      value: 资产IP
+    - name: Mac
+      value: Mac
+    - name: os
+      value: 操作系统
+    - name: port
+      value: 端口
+    - name: product
+      value: 应用
+    - name: version
+      value: 版本
+    - name: name
+      value: 名称
+
+actions:
+  - name: masscan
+    alias: 端口扫描
+    description: 端口扫描工具
+    parameters:
+      - name: assets
+        defaultValue: "127.0.0.1"
+        value: ""
+        description: "待扫描的资产"
+        example: "127.0.0.1,127.0.0.1-127.0.0.2,127.0.0.1/24"
+        required: true
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "资产"
+      - name: ports
+        defaultValue: "0-65535"
+        value: ""
+        description: "待扫描的端口号"
+        example: "0-65535"
+        required: false
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "端口"
+      - name: excludeAssets
+        defaultValue: ""
+        description: "排除的资产"
+        example: "127.0.0.1"
+        value: ""
+        required: false
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "排除资产"
+      - name: rate
+        defaultValue: "5000"
+        description: "扫描速度"
+        example: "5000"
+        value: ""
+        required: false
+        schema:
+          type: INTEGER
+        ui:
+          type: text
+          uiName: "扫描速度"
+    returns:
+      schema:
+        type: JSON_ARRAY
+      example: "[{\"ipAddress\": \"10.215.7.17\", \"ports\": [\"9300\", \"80\"]}]"
+      description: Masscan scan result
+      fieldComments:
+        - name: ports
+          value: 端口
+      views:
+        - type: TABLE
+          dataSource: "${{data}}"
+          table:
+            direction: "Horizontal"
+            columns:
+              - title: "资产"
+                value:
+                  syntax: "${{ipAddress}}"
+              - title: "端口"
+                value:
+                  syntax: "${{ports[*]}}"
+  - name: nmap
+    alias: nmap
+    description: nmap扫描
+    parameters:
+      - name: assets
+        defaultValue: "127.0.0.1"
+        value: ""
+        description: "待扫描资产"
+        example: "127.0.0.1,127.0.0.1-2,127.0.0.1/24"
+        required: true
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "资产"
+      - name: ports
+        defaultValue: "0-65535"
+        value: ""
+        description: "待扫描端口"
+        example: "0-65535"
+        required: false
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "端口"
+    returns:
+      schema:
+        type: JSON_ARRAY
+      example: "[{\"ipAddress\":\"10.215.7.17\",\"macAddress\":null,\"macVendor\":null,\"status\":\"up\",\"name\":\"\\n\",\"os\":\"Linux 3.2 - 4.9\",\"cpe\":null,\"portServiceList\":[{\"ipAddress\":\"10.215.7.17\",\"protocol\":\"tcp\",\"port\":\"443\",\"status\":\"open\",\"reason\":\"syn-ack\",\"reasonTTL\":\"63\",\"name\":\"http\",\"product\":\"nginx\",\"extraInfo\":null,\"cpe\":\"cpe:/a:igor_sysoev:nginx\",\"version\":null,\"frigen\":null,\"memo\":null}],\"vulnInfoList\":null}]"
+      description: nmap scan result
+      fieldComments:
+        - name: ports
+          value: 端口
+      views:
+        - type: TABLE
+          dataSource: "${{data}}"
+          table:
+            columns:
+              - title: "资产"
+                value:
+                  syntax: "${{ipAddress}}"
+              - title: "Mac"
+                value:
+                  syntax: "${{macAddress}}"
+              - title: "名称"
+                value:
+                  syntax: "${{name}}"
+              - title: "操作系统"
+                value:
+                  syntax: "${{os}}"
+              - title: "状态"
+                value:
+                  syntax: "${{up}}"
+              - title: "二级嵌套表格"
+                children:
+                  type: TABLE
+                  dataSource: "${{portServiceList}}"
+                  table:
+                    columns:
+                      - title: "端口"
+                        value:
+                          syntax: "${{port}}"
+                      - title: "服务"
+                        value:
+                          syntax: "${{name}}"
+                      - title: "应用"
+                        value:
+                          syntax: "${{product}}"
+                      - title: "版本"
+                        value:
+                          syntax: "${{version}}"
+  - name: getAssets
+    alias: 资产扫描
+    description: 端口扫描+nmap的组合
+    parameters:
+      - name: assets
+        defaultValue: "127.0.0.1"
+        value: ""
+        description: "待扫描资产"
+        example: "127.0.0.1,127.0.0.1-127.0.0.2,127.0.0.1/24"
+        required: true
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "资产"
+      - name: ports
+        defaultValue: "0-65535"
+        value: ""
+        description: "待扫描端口"
+        example: "0-65535"
+        required: false
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "端口"
+      - name: excludeAssets
+        defaultValue: ""
+        description: "排除的资产"
+        example: "127.0.0.1"
+        value: ""
+        required: false
+        schema:
+          type: STRING
+        ui:
+          type: text
+          uiName: "排除资产"
+      - name: rate
+        defaultValue: "5000"
+        description: "扫描速度"
+        example: "5000"
+        value: ""
+        required: false
+        schema:
+          type: INTEGER
+        ui:
+          type: text
+          uiName: "扫描速度"
+    returns:
+      schema:
+        type: JSON_ARRAY
+      example: "[{\"ipAddress\":\"10.215.7.17\",\"macAddress\":null,\"macVendor\":null,\"status\":\"up\",\"name\":\"\\n\",\"os\":\"Linux 3.2 - 4.9\",\"cpe\":null,\"portServiceList\":[{\"ipAddress\":\"10.215.7.17\",\"protocol\":\"tcp\",\"port\":\"443\",\"status\":\"open\",\"reason\":\"syn-ack\",\"reasonTTL\":\"63\",\"name\":\"http\",\"product\":\"nginx\",\"extraInfo\":null,\"cpe\":\"cpe:/a:igor_sysoev:nginx\",\"version\":null,\"frigen\":null,\"memo\":null}],\"vulnInfoList\":null}]"
+      description: getAssets result
+      fieldComments:
+        - name: reason
+          value: 原因
+      views:
+        - type: TABLE
+          dataSource: "${{data}}"
+          table:
+            columns:
+              - title: "资产"
+                value:
+                  syntax: "${{ipAddress}}"
+              - title: "Mac"
+                value:
+                  syntax: "${{macAddress}}"
+              - title: "名称"
+                value:
+                  syntax: "${{name}}"
+              - title: "操作系统"
+                value:
+                  syntax: "${{os}}"
+              - title: "状态"
+                value:
+                  syntax: "${{up}}"
+              - title: "二级嵌套表格"
+                children:
+                  type: TABLE
+                  dataSource: "${{portServiceList}}"
+                  table:
+                    columns:
+                      - title: "端口"
+                        value:
+                          syntax: "${{port}}"
+                      - title: "服务"
+                        value:
+                          syntax: "${{name}}"
+                      - title: "应用"
+                        value:
+                          syntax: "${{product}}"
+                      - title: "版本"
+                        value:
+                          syntax: "${{version}}"
+image:
+  smallIcon:
+  largeImage: data:image/jpg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QAiRXhpZgAATU0AKgAAAAgAAQESAAMAAAABAAEAAAAAAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCABkAKoDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD93qKM0Zr0j5kKKM0ZoAKKM0ZoAKKbNMsETSOdsaAszE8KB1JPYD1ryPx/+214F8GSyQWeoN4jvI5PJMWmbZIkfe0YDTFhGBvSRSys20wy5AMbAVGEpO0VcidSMFeTsevc0E4r57m/aJ+LHjhQ3hv4d2uj27Ngza67KVj7SqGeDzC/O2MfdGDI6EhKhksfjzrR3r4w8I6BbnkRvZLd3f4lYPKT6Aydvm61osPLq0vn/lcy+sxfwpv5f52PorJoya+df+EJ+Mckeyf4k+cp67EtYP8A0HTwf1pr+E/jZpqLJYfETRpGjz/o+pwxzxS+29bNZE+uWx/dNHsH/Mvx/wAhLESv8D/D/M+jKK+ebf4rfGzwTJi+8L6T4ksx96S1dDMrjHyL5bq7Rv0EgttyHl0K5Zdfwf8At1eG9V1VtO1/S9a8L6kuGkhnheUwg8AOgUTq24bTmIAEp8xDKTLoTWq19NRrEQvaWnqrf8D8T2+is/wt4t0vxtpC6ho2o2erWLsVW4tJ1miLDqNykjIyMg8jNaG7/OazOhBRRmjNABRRmjNABRRmjNABRRmjNABRRu/zmsfx18QdF+GegSarr2ow6Zp8ZCmWTJ3MQSFVQCzsQCdqgnAJxwaNdhbbmx1rx/40ftjaD8NNXj0LSIJPFHim4nNqtjatiG2m2khZ5cEqS2E2IrvveNWVd4Yeaax8cPGf7U3iiz0bw3HN4X8H3lpPcXN07eXeXUavbYLSKcx5jnJ8mPLEtCXcRS7q2fg78INF+DPhfwvLY26vc6VqcuhXeoSJ+8eEPPp8exBny1knFrwvzBNu92Cbq6I0YpXqfd/mzknXlLSlt3f6L+kcrceCfHf7R2oaDfePtbm0vRbzX7y2TRbBfIVoYYtQ2F4yWAO2IZMxkcNuyi4XHqXwP+Guh/D3RrmPSdNt7W8h1TUYmuCpe8Km8l2gyNl1Dx+W+0EKQ4YD5snmPiJ8W9L+Hs+qeHVm+1+KLfUJNY0a3hJZ5nkmNw6OVBKATSyW8qJmTyJo+CZwD5x8R/GvjHWLW61S7vG8L2euLGX0K2ZftEkqxgGSSRXI3LAqq+TKjGKL5IwG3dlHD1a6SjpH8DgrYyhhnzz1l97/AKuj6E8V/Fnwz4Ilkj1bWrC1mh/1sQYzTR/70cYZ179VGcH0OOJm/bO8Co7C3n1XUtgyxs7VXx07FweMjPHGQDg1866J4Ch8j7VqEclztkWJBIAGjfJ2qqMNsUxwSVKhGC5wFMQOf4l1xbfMP7uaNiWSNFzEQQAWVXz8rAFS8m5zgcqYst69HJqW0pN+h4GJ4nxS1pU0l53f+R9Eyft4eBowf9F8XfLksRpacYznP77j7rf98n0NWrD9uHwFelv3ut26oQrNPZBQhJIG4ByRyCMkY4NfK2lajNq+oNNdTal9jtgsl19lLzSuC6pgAuqgnzJDnOBufryD7N4J+H/hnxH4XtdUs7vVhD5ZEV7LdbZrQqCjEvgGNhhs4IUFnPQ5LxGW4Skvecvz/QjC5/mde/LGHzuv1Pa/Cf7R/gPxsinTvFWjzFuAJZDb8nHAMgVW6jlSQdy/3hnpfFPhTS/HWjx2usadZ6rZHEkK3MQlVCcFZIyfusMBldCCCAQcgGvjy58G2uuXTQPHb3V1A7W8U1vADJIykgeWq9yOYwuE2szP+9YZf8NpPEvg/VjY+HfFl74dkvh5dtMu28snkJ4KrIdssj7XAkIlVXO4Ky5V+ark8bc1Kfyf/AO/DcRyl7uJpfNO6/E9Ju/2crrwpew658PNfvtA1KbxDd20emy3Mht7kLPdROhmG6Ty/le5KSrcIfJQBF25PU+DP22NW8DeIZPD/wATdDudPuI79LCPVLeJSr74YpEd0RmSQYlG5rd2ILx5hTcduL4e+OZ8C3ul2/jrRx4b0Hw3Cttpt9Yb7ixll8kQJIwy0qKkLPDGpLvI0srNGoWJz2l3pOm/FHwtp9jf29rqFv421I67cJuWRYbS1aIxsNpK+YiR2Nq5jclZJpGVjgtXmVoSWlaPz/4PU9qjOEo82Hl8unzXTXse2eHvENj4s0WDUtMuob6wuhmKeF96OOhwR3BBBHUEEHBFXK+P7z4feKP2eta8Q+Jvh7dy6hptx4gtLe4sZgbhrlCLG3cEZH2oLIZ4QcidJFI3SNuA9u+CH7Veg/GC6XS3kXTvEQTzPshJaO5Q7sNDJwGJCMxj4kTa2VIXeeOVJpc0dV+XqdlOvd8slZ/n6M9SoozzRmszoCijNGaACijNeb/tFfGOT4b6Xp+laYRJ4m8SM8Wm24CNI6IUWWRFkIR2UyxIqscb5kO1wChcYuTsiZSUVzS2Kvx5/al0r4QXdvo9pH/a/ijUJVgt7JP9XbM0bSBrh8gRgIu7BIJymSiuJB4n4J+HWufFXxH4U+IHxI1BpJLxXsDYRM1ummXMzxKke0kNbAXFv5Gzi486aDPkyxy+Za+Avw/jtdI0u+vriGXx95q6hpMt/LIsWrt5bmS6RypaWS6heYyNsaWzW5yYFkLtPp+NP2gNI0C51jTdM02PX7jUtya14ZumhifRJZP3c3nhm8kxSEs0iK+x282RZJBPluuFNx92nv1f+XY4JVIy9+q9Oi/z7s6W5v7P4XeFNP0tns9IuvBieXo6ShYYdZsEUxiGPYBuZo9qyIgHlXMccxiMJiEvH3fiHxB8cLjVF0Gzm0Lwb4ijMeqNqMLR3V26xi3YopU8SRIkbojBALdSsmZHDdB4R/Z7utde31LxvqLeKpLdo5dPtLpvtMNgFwyfvGJ80owXaxyxwWklndi9eljR9qqqxKqqAqqOigcAD2HStIcsXd6v8AnGrNWXur8f6/Q8z8G/Cex8D6fHDaxzXFwsYSS8uX8y4m4wSzYA56kKAGPzEE81xnxb05td8c2Oll1WOERoyP5bqJHO7cUcjIH7rODyAw717/8A2T/0zFeWfEvQmuviRNb+ZEpvIookikkRQxYIoOCjEgspXOMZzXZTxTTucFXLVuec+OrBtM07bJG0CwwlPLkV0ZV2pI8a+aNxX54k8tjKNkWOBivnD9qH4yQ/s/8Aw5m16a3jvtW1Gc2mmWs5PlzTYy8r85aOJdvGeWaIEbc7frb4k+Hla2lkht1jVvMlUqggDqfJkGP3Ef8ACRwDk9RgEZ+JP+CoWlNaeBfCOq/8I7pOoWdnqN7bzfaXvv8ARZJo4Gj/ANVcx8yLDJ94niHjvXVHFtU9Gcn9lxdVKex8yR/EP4hePtM1zWNc8dXdjJeaYkumrc6m9uDjUrRd0UUQ220ZYMiuwiiJ3BWwrlfVf2R/2n/El38R7X4e+Pri51KbUJVt9Nv7qTzrqC5cAwo8uT58M2UCOSwG+J0cRjlnwa+Juh2HgP4nMvwR8LfEBvFXhOwsbS7Q3VxJ4fmhW3tGhlErTywpG7RypJE9s7R6fEwkyFkg4r4UiPxj+0N8P9B0vw34WvL+zubK2m1C3uNTljDJK00jpIL4q8dvG3leZl0ZbXcjNF5eOajiZqdz062Apyhyy2P0H+HcHmzfZZP9S4WEqCMshbgLnhtj4Zchgv3ghbmut8W+Hbq3kt9Q8uS2vJAXaXy/L8pht3Bnk2tt8xSgVVAQQKBzijwfpK6lrsfk2K2sZdfkjd33hpkx8rCQnGCflX19q7DxXokVrpjrttbdrpHWM/JCz/vmcYzAmRseMg9wy9sCumpjHzpo8ujly5Dr4dMTW9KjkMCNb30CuYnUOrI6g7SDwwIOCDwRXITfCTWPh5qupa58P7yHS9Y1JY1ubS+Uz2N0E3bdykg/LvkYLuXJbYJYFZmHrXhnRGt/C2lxsm4x2UCEseSRGuSavf2T/wBM1rhliG9HqelDL+VqUbpnlPgb4waTcXljpOsW994XbwzIWe21BXkuNcvmDqvlYQNcsxkkm2iMSzztG8QdV3S1fit8CI/Hgj1BF/sXxv4m1WG+EW8PCsVu0LFbkx7h8tvEI3mjLAXF0EDyK8IPonjj4R6T8RbOKPU7GOSa3DLb3SAC4tg33gjkHCtgZUgo2ASpIGPKZPiPq37P/iG80zXtVsddkkhU3Xie4nR5tFgG0gTW+4sqrvDLG3B3b5Jpnb5+dQblelv2OiXuxtXWnf8Arb1N74TftWap8ONduvDPxEjkW3tL5NOsdXwZpJNyxrGZWUkTAyGWEyoMiSB1cMwkZfo6xv4dUsorm2ljuLe4RZIpY3DpIrAFWVgcFSCCCOCDmvnnxTpfhX4neANLtbiTyfBUE4ktNVZs3mrXu4yRm1YqZZJjOnnlwpe4ljQBJ45HLYHwG+K2r/ATxy/hrxVN5Oj67fbtLSVcGBXQYmjjUs8SO0c88sb7kiHnOZVMEwfnqUrrmirPqv8AI1p1+V8sndPZ/wCf6M+q6KDwaM1znaHSvmv9vrwNda6trdSxWl1od7bxWl0lxpv202ksUxkjeHMqKlxIJGijLYXJILpkBvpTNNnhW4iaN1DRuCrKRkMDwQfaqo1HTmpoxr0fawcH1Pz1+LHxem8axQ6fDr1rfWkO2TxJob61Lai/dWLpBFcajPKjCQJ5iqqCRYSskiI21BZuEuj4Y0ux0fwT4j0zSWuZNNtpLC2W6+1tDHMHdeXXA8mYBlcyv5alnYE5+v8Axl+yR8NPiDp93Z6p4L0OS11CPyrqK3hNmtyuAvz+SU3EAKAWyRtXGMDHmOvf8EyPB9vf/b/CWv8AizwZqi3n22Oe0vTKkchUoz4OHLlWcGRnLMXO8uMAe1QzLDxsndP0uvwf6Hh1suxOuql+D/H/ADJvhl+134SOgaRpOrPfeGtTjA01LW90uSzV5IRIhWOMF2VcQSFd2AFXtkA+raT4ltdfsvtNheW99bZA862nWaPJUMBuUkcqynr0YHoRXzL4m/Z1+MfwlezXy9B+KHh+zW7ghtbi2817ZJpI5FkeFsSOVaJEAR5SiySc7VAPl/g7xn4asTDHa3Xiv4a6toWmLqF/D5jm4u7li0m2TcY3E29Lh5kcxI0s+x2IaaN6jgqNf3qMv1t8t19wf2tXoNRxMPwt+Oqf3n3l9tbH8X51wPxxt5oI7HWI5JI1t/8ARZ2EnlmNGJKMHxlfmLD3Z0+o8v0D42/EvwNf29jq2laV42WSKK9mk0h2jNlbSErGsbBN85bZIUbyTvMTF2hDqa7Dwb+1b4C+KOi4fVIrG3vnW0RdUH2aG7ZyFXyZidjq7EBGDAuSu0EkVnLAzp62uu6OyObUKq5b2fnp/wAAL+aLVtPaRfLRvLVn48pVUZVWYNlljAcxl5mc7fIbyyGAHknxS+Gen+KPD2paHrmn/btD1JTb3EEymNsqy4GTzHKjbCD1zgHAZ0X0fWdNvPhjqMfnGabSbhw9rc5xnI+XkgjzyCRuYFdpYgHDqzWNrrKIIlj85g0awIT+9YDDRpw5IXcIwrKwBllPmA5AKcXHV7E1K3N11PgfVv8AglfClzrsei+Loxp99YpFGmp6e/n2wF7ayY3R5WTHlFd2I8kg7QOnr37L37Hegfs6tNcafJd694mvozBLqVxAIWijPDRwRbj5YbozliSMjKIZBX0Ne+GrWCSbbLbrsV87ZI0DlUlXPy3GDlrdW+pHtnQtfD9rpIZcQJGr+UWIjaM4JQbgrlWGBGWV5kBS4kwGGDWj5FqiXWqS91sd4I0b+y7IO7ouVMm8puTg7DJt2ncse7GWR1MhVSsLYzqmNvFniqz0aEyx27kedGX/ANXAuN2BllIEYWMPEwSQBPcVjXHigzXUdnYxXU15csFREbdcSlBtADEDEka71LFVQpuypwXbo9I8R+HfgVE0Wv63plt4gvYjNNaI5eaONcM3lwrukWNSwLyEbcsGZsbSMZUpN+fY1jioxjq9D1lr9nYnDDJzxTWvikbMdwWNSzEnhQOSSewHrXzrrv7Yuqa5b3EnhbwxdG007d/ad3qR2S6eqg7m8pf3bAYclhMzBY32xyyL5Lec/F7xLdaE95/wsDxjd6hrOlwfb7DTbFh5WoIDuMcsLYt4pFUKGk8pMebHLHISfJi0p5ZKXxafizKtnlKPwa/gvvt+h9JeKP2r/A/hRLYtr0WpNeNst/7NBu4pm2lgonX9wCQDgNICcHrg48G8S+KvEHxG+J91r2k+HfFjR3mom1FrPplnp5iIgxAXke6HLRiJklRwzmaPOFYRrS8E+F/HnxP1S8/4Vr4LsvD2j3l1Y6jHrOpfvmEkdzulC3EwPy7oI3eJI5yrmQ5BmOPTNF/4JyX3imRbr4gfEjxJrM7Xb3sltpkhtoWcqY1DGTchPlEJ5kcULARxBPLCYbSLw2FbvLXbu/uW3zZyyq4vFpOMdL3XRfjv8keF614m1T4d+O7fU9FhtfhvqVwLy21mA31nfNfJbzRxzRLZxO0yiPahCWzb5EaSVVSVTJL1lzb6l+0L4v8AsPhOSzumkhEKalLZ3NzPNbkl082SW8dhbFlWQBnCw8MFkmufIH0T4E/4J+/CP4ep/onhGC8ZovIf+0bma7iZN7SMogdzCqs7s7Kkaq7HLAmvWPD/AIb0/wAJaVHY6Tp9jpdjF9y3tLdYIU7cIoAHbt2FcdbMKb/hR+b/AOHb/E6KOWVW71ZK3Zf8Mkvki/K2+Vm/vMTTaKM15Z7l7u4UUV8U/tDftjfGoftjeMPhb4D1L4XeC5dB0C11nQk8YeD9X1V/FkTpGJ7yO7t7y1t4beG6ngtWRRPMrb3K4KrVU6cqklCC1JnOMIOpN2S3Z9rY/wA4ox/nFflv4b/4LF/Fr4o+FfiV4lXxH8FfhLJ8M3nGueDPEvgrXtd1PQBE5gX7VfWt9BHN5twkgH2W3kKKRw5BLd14m/4KofEj9mPT5NQ+Il18P/iDpPjTwncX3w9u/CfhrUNEbVPEK+UbPR5oZ727Y/bkuUeJ90bL9muAVJHGv1Wry89tP6X56EqtSc/Z86v8+ye9rbWfpqfocOK4r4w/s9+EfjvpjQeJNJjupgF8q8iYw3kBQloysq4JCOd4RspuAJU4FfAHxw/4KYfHz9mzx94a8N+MfHvwEtzrGmSanq+r2nwu8TXtr4YRWWG33rb6nJ5y3V0Xt42LQkNGPkJlRK9a8G/txfGT4Y/HAeEfH0fw9+I03ibw1rd14Ui8HaNdaFc3fiDS4EvP7FmFxfXqb7q0aSSKTKbfssuVYEGn9Xr026lmnHd32IVShW5afMpc+yfW3qrdBfin+x98QvgVpmtP4PupfF/hnWL2OW803yd9x5DCCGZJYtw87dEh3SwlZXAx+7C5POeGPip4R+NutahqWvQ29vqjSPa2r3j4a3gT926rONuN8u/eG2iUNFHiVYxjg7D/AIKo/FaL4R+E/GGufGX9nzw7a+LIrgwWs/wg8USvbXNoVS/tpB/ayzIbWYtFI8sUfKFsAZx69+z5rWl/t3eIfEnhf4j6H4c0X4oeGdO07X7fxL4Kv2k0fxdo9+JVtNTtDKDIB5ltNDJHL5jRmJDHcPHIjV7WHzGpTX+1RutNVa+vdHzmMyOnUbeDmk9fdd7O2js2tLbNakw+G+qeE0mh8P8AiK+sYJMiSxuh5kMh6nepBjbn+/CxJCkknzPMxxY+MNJkZTZWd9DlQ3lOFVgpJCn5g2wMdwCRkkgEqg+Wuk139ib4mfCuJ28H+ILPXrG3QrFZbltJXDfM2yKbNvGd2fmLknP8O4kfJfhP9rX4jX/wY0Lxf4m+K/wp8DzatfPot3omp/CfxBdanomrxRGa50q4CX8LtcW6hlkdbeOMmNioC4r1fruDmrxal8tVa297d+p5FPL8xT5bOPTdu78rX7dD6VtfG/jKxWKNdFvJY4VEafZ7p7eNwFdeVKj++xOQOvuQY2uvGWshtum2XmSjbPJKSgdCgUo2/Yc4UHKhxuAJxXzdqP7cXxQj+MXgbwBcan8HdL/4T60h1TRPHljo+ra54f1+2uZIoLKO3to7qOW3nmuJRG32icxRjYRJJ50eNS9/at+Jul6j4ksfDvjz4F/FHxB4RGoSaj4Ug8Ja14Z1K8GnyGO+isLie+nt7i4iYMpQKy7tuXUEEixGEvpH8Pnte+xcsHmLjdyW19+l7Xvay17teZ9GaT4H8SSxyreeJJbOG6H74We5JZl4+SRk2FgcD5Wd1UbwN2Qy1fEnhjwD8O9GWPXCjlv9IhSR9115nzbZIY0xtfduCy7flY8uvWvlmb9rvxl8ZvDC+ItN+J+g/Df4aXt6uk6V4jfwtdeIdb8U6n5fmPBpGl2LxTyxwYdJHZpCXjlGxkid69Z/4J7at4X8YfHDw3oXjzUNE8c2/wAQYLrU/h/438NPPZ6X4mks8Pd2V7aSu9zY6pAI3m2iZo5US5RtkkEsRVfHYelGTjd27Lf+u+xNHK8bWcVKyb01b07r1XVXv3O3+HGq/Er9pfV9Em8K6fNoem/2OIrzVwRDuf8A0aSLLjAiQhmZI48yxpM7xl1kKn6A/Z8/4J++Efg7pOkvrEcPijWdNsxaedMhS0wVVX/cElW3bE/1m4AxhlWMls/J/wAPv+CjXxb8QeK9T8J2fib4K/CLVtEl1Ux+Ata+FevXF7oGn2M7qA90uo2ttcYtxDKXt41jYTL5YIIqlon/AAVc+JWsfDbXvGDfHb9nGz8M+Grm2tr2/f4Q+KEVFugDaSFJdWSRlmBypjV0xg78HNeFisTiq8bU0oxfRNa+rvc+kwuV4XDS/evmmrbqWjeisrdeh+nP3/vEt7mjH+cV+ZMn/BYP4j/DW++H/ibUvE3wv+LngXxlq2qeHksfCPgTVdB1i81WCzm+yWUD3mpThZZdQ+zW58yDaokZiwAyLt9/wUZ+Lv8Aws1tFufjV8A/D/jNtSi0ZvCMfw213WtA06/n2+Tptx4ijvYYmvsSINm2FnkKqIRuAPm/Vaqdrduq67Hse2p25ubv3vpvpa+nU/Sn8vzoBr8xvBf/AAU++PWrx+MJPE3xB/Z98DxeGfifc/Cmzab4da3qC61qUUUTxyJ5esKYRPvkIRwRH5fzSnIx0S/8FGPjRo/xB0Wy/wCFifA3xlb2PxM8OeAPFWmaZ8PNY0u8086lqkFnKI7ibV5Y/MSOV2VljlTIGcjqvqtZR5pLT5ExxFJzUFJX+fl5W6o/ReijNGaxNg6V+bf/AAVD8Vah8Uf2xPE3h3wXb6tda94P+B/iHRLue2dbYWup65NZy6XBFKXVhM66bPJ5gwkf7vMgYkL+kma8j/aC/YJ+DP7Vnimy1z4jfDTwn4u1vTrX7Bb6hfWQN3Hb72cQ+auHaMMzsqMSql3IALNnowdaFGvGrUTkl0Tt0tvZ/kcuMoTrUJUqcuVy6tXS1XS6v95+NPiTxtH8fP2W/jl4kurH7D8Yv7Fs/BHxB0qBY9txqVlerFBd4jOwNKoaPIPl5hEaHbDuf0Dx78cNW/Zm8UeEbDx94G1LXvD50nw6fB8PmQSC38aWMEkPkL+9BjMiPEPPOUTyMoW3kj9MvFn/AASp/Zw8b6R4fsNS+C3w/msvC2nnStKhj0xYEs7UzSTmECPblTNNNKd2SXmlY5Z2JZ4U/wCCUH7NfghdSGm/BH4dxLrFjJpt4JtJS5E1tJgvHiXdtBwPu4PA5r2f7cgoWjTtKyV7qz1d21y7tP7zxXw65TtKreF27crurxgkoyU9FFx0un7vu+Z+amk/Cv4qeKvit8JdV8XaVqdxp+h+CtOufGqrNbvNrOt6fdz38FhxLtbOoPb3J/5YsbVR5q4yc34VeMrj4q+HfiVN8NdD+K0fjjwf8QT4+tp/GVzpf2W18XWc0ZfTYTaTFo454VktGDAwLDLJ+8GTv/Sj/hzV+y0f+aG+BfTP2aTcB6Z35x7ZxWl4h/4JLfsz+KU09bz4H/Drbpdolhai30hLXy4EJIQ+Vt38sx3PliWPPNXLOsK9PYuzvzXkru6S0fLoRDIcWld4lc0bctoNJWk5O659b3t93S6PzN+Jtrrsvwjh8SXXwJ8W+MHn8T+N/Fi2ifEJ/Cl94c03VtTub0LNJZTEXDTWsyLJEruF8tlIO/B+/f8AglJ+zpcaB4Dh+Musal4dvL/4oeFNEtfDum+HoZk0bwv4Yt4pLjTbG3aeOOaR3F5JNLI8cQ3PHGkSLCC/Sn/gjf8AstNKWPwK+HpUtv8AKNgTD1zjyi2zb/slduOMYr6P0zTLfRdOgs7O3htbS1jWGCCFBHHCigBUVVACqAAAAAAAAOK83HY6FaMYUYuKSSd2ne1ktVFP77nq5fl86Ep1K01OUm2rKSSUndqznJfclpvcXUL+HSLCa6uJBDb2sbTSuQcRooJZj34AJ454r8WdV8R6v8avh7qXxA0D4O+MPHNr43+Jeq+PfC9tD45fwXqen6dqFriC/F1aT7gZIXaIwb9+JTuXAIr9rGXcO4xyCO1fNuo/8Eef2XdU1G4upfgX8PFkuZGlkWHTvIhLMcnESERqpP8ACqhfas8vxVOhOUqkXK6tutPvTTKzHB1cTTjClNRakm7pu9k9PdlFrfoz859M8Fi5+Gn7PnjJbPTf7c+KUvh668BeFfC8cjab4J8G6Hq2n6nqTXVzc+S8100kliJdsRJeCJYxKA8jcvrPisr8bvix4A0/wDo3wi+LHjiDUJPDPi6MpeTeKbW4uruRo2mbebGa+S3uZQEOVKyvsEluiSfsH8Xf2KvhL8evh5oHhPxh8OfCGveG/CaJFoenT6bGsGixpGsSx2qoF8iMRqqbI9q7VUYwBjldP/4Jd/s76T8MtW8HWvwc8B2/h3Xry21DUbVNNAa8uLbd9nkeX/WExb5AnzYUSygACRw3Xhc2VOFqkOaTldu6WlrWWl07bNNanPjMn9rUTpT5YxjZKzbUr3Tb5rSV94ta66pu5+ZH/BPn45yfs++Mfh3qEXgHUPEGtfAqy8T+EPEvgSy1Cxm17w9Dqt7b3ltqNl5ssUE77beO3lcSp5guJ9pJUq3M/HT4sfbPivoVhqkl98Oda8dfGxviJrEWg64bK68A2d9p82nQWsuo27BLe8voxPMTG+WZrwoSF8xv1Y8R/wDBLD9nfxT4A0Xwzc/B/wAEwaT4daV9L+wWX9n3WnmVi8xjurcx3C+Yx3PiT5zgtkgY7D4d/sV/CP4UfCDU/AHh/wCG/gyx8F64zSatozaTDcWusu2N0l4sqt9qchVG+Yu2FUZwBU/2hh0+dUvesk7y0aVult2lZ6262WxX9n4h+463uXlJWjaSlK73cmuWMpNxW+ycmld/lX8U/jn46u/AfgvU/itZ+JrR/gh4R8daHqvi3xHeWEieJY9TntU0SO2aGdprm5aytIklaWGN3m673kyed+F8vjC5+DHiLUPD/wALbbxpcWNv4L8NW2keJYrdINQvPDtnFpepyIskyeU9vd2s/lPNsbfErhG4B/UT4Yf8Erv2ePg18QdP8U+G/hL4U0/XNHnFzpkzxy3MWkSg5WS0hmd4rVweQ8KIw7EUvxD/AOCVn7OfxX8dat4m8Q/BvwNqWva7cte6jemx8qS9nfl5ZPLKhpHPzM5G5mJZiSSa0o5lhqVRclJ8qUvtK95f9u2suisZ18txValONStHnk4Xag1G0NUrc97yb1afkl1Px8+JHhzxF8KPi9pnxu8b+G9R0KPUvjCNRbRriP8AtW+07S1tHvptREtrczQKVjspnmSOHzNttuaVkRK+qPhl8fIfDv7EniX4J6x8CdZ+NGl+Ktf1vWtJ1uw1/TofDHiSDUNZn1a2vLm9W5W8tJYHmXLwQzOHtI3hkbKlfuL4W/8ABL/9n34I/EPSvFnhL4T+E9A8S6HKZrDUbSKRZ7VyjISp3Ecq7DkHhjWN4g/4I/8A7MvifxLcapdfBnwekl3KZ7i0tI5rPTblzgs0llC6WzkkZJaI5JOc5NRUx2Eqe7OlLlvfSSTv1u+W1n5JWNKOBxtGMXCtHmS5dYPl5b+7Zc97x7uT5uvc/La68LfDz4p+DdA0/wCH3gjx7Z/EBfGMPiGbRfDvjA6r8Px/ZGsWVjd+Kkn1Bo7q6lurdbu0UqZWaaK5MiGRFmf3/wDYX+APgnxd+37rlj8QNL+J2keKtY8W6h8SfDVumrW48J+K49NuLc2txLDHI9wt3Zy3aSqkghRxsLiQxha+/wD4u/sEfBb48+GPDei+Lvhd4J1rSfBsBtdAtZNKiij0WAqqmC28sKYYSEQGNMIdi/L8q4d+z5+wd8G/2UfEV9rHw4+GvhPwfq+p2wsrq/sLIC6mt9wfyTK2XEZdUYoCFLIhIJVSOf63S+rOioy5m7p82iXa1rvR9zq+r1vrSr88eRRs48lm3o+a/NZO6T2dketCiijNeedgm6jdRRQAbqN1FFABuo3UUUAG6jdRRQAbqN1FFABuo3UUUAG6jdRRQAbqN1FFABuo3UUUAG6jdRRQAbqN1FFAH//Z
